@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "11475866906",
+    "project_id": "neptuneproject-e13d0",
+    "storage_bucket": "neptuneproject-e13d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11475866906:android:60dd8313096c282866c8a3",
+        "android_client_info": {
+          "package_name": "com.example.neptune_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11475866906-3qst1kta2m98paee4o594c3fj23hg90b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_TEDMmLykop5LEHMTDTxv89A7YtOjyhw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "11475866906-3qst1kta2m98paee4o594c3fj23hg90b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "11475866906-ndke9npnkc3qrns648rp6aqpsntah20p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.neptuneProject"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
