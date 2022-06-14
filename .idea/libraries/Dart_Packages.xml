@@ -114,6 +114,13 @@
             </list>
           </value>
         </entry>
+        <entry key="intl">
+          <value>
+            <list>
+              <option value="$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/intl-0.17.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="js">
           <value>
             <list>
@@ -163,6 +170,13 @@
             </list>
           </value>
         </entry>
+        <entry key="simple_gesture_detector">
+          <value>
+            <list>
+              <option value="$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/simple_gesture_detector-0.2.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="sky_engine">
           <value>
             <list>
@@ -195,6 +209,13 @@
           <value>
             <list>
               <option value="$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="table_calendar">
+          <value>
+            <list>
+              <option value="$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/table_calendar-3.0.6/lib" />
             </list>
           </value>
         </entry>
@@ -235,6 +256,7 @@
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.6.4/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_lints-1.0.4/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/get-4.6.5/lib" />
+      <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/intl-0.17.0/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/js-0.6.4/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/lints-1.0.1/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/matcher-0.12.11/lib" />
@@ -242,10 +264,12 @@
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/meta-1.7.0/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/path-1.8.1/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/plugin_platform_interface-2.1.2/lib" />
+      <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/simple_gesture_detector-0.2.0/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/source_span-1.8.2/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/stack_trace-1.10.0/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/stream_channel-2.1.0/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.0/lib" />
+      <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/table_calendar-3.0.6/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/term_glyph-1.2.0/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.9/lib" />
       <root url="file://$USER_HOME$/development/flutter/.pub-cache/hosted/pub.dartlang.org/vector_math-2.1.2/lib" />
