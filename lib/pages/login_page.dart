@@ -1,15 +1,34 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:neptune_project/controllers/user_controller.dart';
+import 'package:neptune_project/models/user_model.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
 
+  final UserController userCon = Get.put(UserController());
+
   final TextEditingController idCon = TextEditingController();
   final TextEditingController passCon = TextEditingController();
   final RxBool passVisible = RxBool(false);
+  final RxString idTxt = ''.obs;
+  final RxString passTxt = ''.obs;
+  final db = FirebaseFirestore.instance;
+
+  /// 입력한 ID가 존재하는지 확인
+  Future<bool> checkIdExists(String id) async {
+    final CollectionReference<Map<String, dynamic>> collectionRef = db.collection('users');
+    var doc = await collectionRef.doc(id).get();
+    return doc.exists;
+  }
 
   @override
   Widget build(BuildContext context) {
+    idCon.addListener(() => idTxt.value = idCon.text);
+    passCon.addListener(() => passTxt.value = passCon.text);
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -83,57 +102,66 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 40),
 
                 /// 로그인 버튼
-                // Obx(
-                //       () => InkWell(
-                //     onTap: () async {
-                //       if (emailTxt.value.isEmail && validatePw()) {
-                //         /// 로그인 api 콜
-                //         final Map<String, dynamic> response = await apiSer.postApi(
-                //           '/login',
-                //           params: {
-                //             "email": emailTxt.value,
-                //             "password": pwTxt.value,
-                //           },
-                //         ) as Map<String, dynamic>;
-                //
-                //         if (response['status'] == 200) {
-                //           /// 유저정보 저장 & 가입완료 페이지 이동
-                //           final UserModel user = UserModel.fromJson(response['data'] as Map<String, dynamic>);
-                //           userCon.user.value = user;
-                //           userCon.saveUserToBox();
-                //           rsCon.getRsData();
-                //           homeCon.tutorCheckGoingHome(); // 튜토리얼 확인하고 home page 연결
-                //         } else if (response['status'] == 403) {
-                //           /// 이메일 패스워드 에러시 얼럿
-                //           final String errMessage = response['message'];
-                //           Widgets.kCupertinoDialog(
-                //             titleTxt: '로그인 실패',
-                //             contentTxt: errMessage,
-                //             btn1Txt: '확인',
-                //             btn1Func: () {
-                //               passCon.clear();
-                //               Get.back();
-                //             },
-                //           );
-                //         }
-                //       }
-                //     },
-                //     child: Container(
-                //       width: Get.width,
-                //       height: 45,
-                //       alignment: Alignment.center,
-                //       decoration: BoxDecoration(
-                //         color: (emailTxt.value.isEmail && validatePw()) ? kActivateBtn : kDeactivateBtn,
-                //         borderRadius: BorderRadius.circular(10),
-                //       ),
-                //       child: const Text(
-                //         '로그인',
-                //         style: TextStyle(color: Colors.white, fontSize: 14),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(height: 5),
+                Obx(
+                  () => InkWell(
+                    onTap: () async {
+                      if (idTxt.value.isNotEmpty && passTxt.value.isNotEmpty) {
+                        /// 인디케이터 발동
+                        Get.dialog(const CupertinoActivityIndicator());
+
+                        /// ID check
+                        if (!await checkIdExists(idTxt.value)) {
+                          if (Get.isDialogOpen ?? false) Get.back(); // indicator off
+                          Get.defaultDialog(
+                            content: const Text('존재하지 않는 ID입니다.'),
+                            textConfirm: 'OK',
+                            confirmTextColor: Colors.white,
+                            onConfirm: () => Get.back(),
+                          );
+                        } else {
+                          final DocumentSnapshot<Map<String, dynamic>> userDoc =
+                              await db.collection('users').doc(idTxt.value).get();
+                          if (Get.isDialogOpen ?? false) Get.back(); // indicator off
+
+                          /// Password check
+                          if (userDoc['password'] != passTxt.value) {
+                            Get.defaultDialog(
+                              content: const Text('Password가 일치하지 않습니다.'),
+                              textConfirm: 'OK',
+                              confirmTextColor: Colors.white,
+                              onConfirm: () => Get.back(),
+                            );
+                          } else {
+                            UserModel user = UserModel.fromJson(userDoc.data() ?? {});
+                            userCon.userInfo = user; // 유저정보 저장
+                            Get.offNamed('/home'); // 로그인 화면으로
+                          }
+                        }
+                      } else {
+                        Get.defaultDialog(
+                          content: const Text('ID와 Password를 입력해주세요.'),
+                          textConfirm: 'OK',
+                          confirmTextColor: Colors.white,
+                          onConfirm: () => Get.back(),
+                        );
+                      }
+                    },
+                    child: Container(
+                      width: Get.width,
+                      height: 45,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: (idTxt.value.isNotEmpty && passTxt.value.isNotEmpty) ? Colors.black : Colors.grey,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        '로그인',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 5),
               ],
             ),
           ),
