@@ -97,7 +97,7 @@ class HomePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: ListTile(
-                      onTap: () => print('${event}'),
+                      onTap: () => debugPrint('$event'),
                       title: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +106,7 @@ class HomePage extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: Text(
-                                'Shared by ${event.sharedID}',
+                                'Shared by ${event.registrant}',
                                 style: const TextStyle(color: Colors.grey, fontSize: 12),
                               ),
                             ),
@@ -185,6 +185,8 @@ class HomePage extends StatelessWidget {
               onCancel: () => Get.back(),
               confirmTextColor: Colors.white,
               onConfirm: () async {
+                if (contentsCon.text.isEmpty) return;
+
                 Get.dialog(const CupertinoActivityIndicator()); // 인디케이터 발동
 
                 Map<String, dynamic> savingEvent = EventModel(

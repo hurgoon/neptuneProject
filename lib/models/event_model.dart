@@ -7,16 +7,13 @@ class EventModel {
     this.schedule,
     this.registrant,
     this.isMine,
-    this.sharedID,
   });
 
   final String? eventID;
   final String? contents;
   final DateTime? schedule;
   final String? registrant; // 등록자
-
-  final bool? isMine; // todo del 내 스케쥴인지 공유된 스케쥴인지 구분
-  final String? sharedID; // todo del 스케쥴 공유해준 ID
+  final bool? isMine; // 내 스케쥴인지 공유된 스케쥴인지 구분
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -27,13 +24,14 @@ class EventModel {
     };
   }
 
-  factory EventModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+  factory EventModel.fromFirestore({required DocumentSnapshot<Map<String, dynamic>> snapshot, bool isMine = true}) {
     final data = snapshot.data();
     return EventModel(
       eventID: data?['event_id'],
       schedule: data?['schedule'].toDate(),
       registrant: data?['registrant'],
       contents: data?['contents'],
+      isMine: isMine,
     );
   }
 

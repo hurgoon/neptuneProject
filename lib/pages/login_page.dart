@@ -136,6 +136,7 @@ class LoginPage extends StatelessWidget {
                           } else {
                             UserModel user = UserModel.fromJson(userDoc.data() ?? {});
                             userCon.userInfo.value = user; // 유저정보 저장
+                            userCon.previousSharedEvents = userCon.userInfo.value.sharedEvents ?? [];
                             userCon.userDataListen();
                             Get.offNamed('/home'); // 로그인 화면으로
                           }
