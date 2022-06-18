@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:neptune_project/controllers/event_controller.dart';
 import 'package:neptune_project/controllers/user_controller.dart';
 import 'package:neptune_project/models/user_model.dart';
 
@@ -9,6 +10,7 @@ class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
 
   final UserController userCon = Get.put(UserController());
+  final EventController eventCon = Get.put(EventController());
 
   final TextEditingController idCon = TextEditingController();
   final TextEditingController passCon = TextEditingController();
@@ -133,7 +135,8 @@ class LoginPage extends StatelessWidget {
                             );
                           } else {
                             UserModel user = UserModel.fromJson(userDoc.data() ?? {});
-                            userCon.userInfo = user; // 유저정보 저장
+                            userCon.userInfo.value = user; // 유저정보 저장
+                            userCon.userDataListen();
                             Get.offNamed('/home'); // 로그인 화면으로
                           }
                         }
