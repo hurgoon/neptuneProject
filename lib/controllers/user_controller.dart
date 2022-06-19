@@ -8,9 +8,9 @@ import 'package:neptune_project/models/user_model.dart';
 class UserController extends GetxController {
   final db = FirebaseFirestore.instance;
   final Rx<UserModel> userInfo = UserModel().obs;
-  final RxList<EventModel> myEvents = <EventModel>[].obs;
-  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> userListener;
-  late List<String> previousSharedEvents = userInfo.value.sharedEvents ?? [];
+  final RxList<EventModel> myEvents = <EventModel>[].obs; // myEvent + sharedEvent 데이터
+  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> userListener; // 리스너 해제용
+  late List<String> previousSharedEvents = userInfo.value.sharedEvents ?? []; // 공유된 스케쥴 비교용
 
   /// 로그아웃시 유저데이터 리셋
   void resetUserInfo() {
