@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:neptune_project/models/event_model.dart';
 import 'package:neptune_project/models/user_model.dart';
 
@@ -12,8 +15,23 @@ class UserController extends GetxController {
   late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> userListener; // 리스너 해제용
   late List<String> previousSharedEvents = userInfo.value.sharedEvents ?? []; // 공유된 스케쥴 비교용
 
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    /// google auto login case
+    if (userInfo.value.userID == null && auth.currentUser != null) {
+      userInfo.value.userID = auth.currentUser?.email ?? 'no_email';
+      userDataListen();
+    }
+  }
+
   /// 로그아웃시 유저데이터 리셋
-  void resetUserInfo() {
+  Future<void> resetUserInfo() async {
+    await handleSignOut();
     userInfo.value = UserModel();
     userListener.cancel(); // 리스너 해제
     myEvents.clear();
@@ -23,7 +41,7 @@ class UserController extends GetxController {
   /// 유저 데이터 리스너
   void userDataListen() {
     userListener = db.collection('users').doc(userInfo.value.userID).snapshots().listen((event) async {
-      debugPrint('⚪ LISTEN ');
+      debugPrint('⚪ LISTEN : ${userInfo.value.userID}');
       if (event.data() != null) {
         myEvents.clear();
         userInfo.value = UserModel.fromJson(event.data()!);
@@ -72,5 +90,43 @@ class UserController extends GetxController {
       myEvents.add(EventModel.fromFirestore(snapshot: eventSnap, isMine: false));
     }
     update();
+  }
+
+  /// google login
+  Future<void> handleSignIn() async {
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      final googleAuth = await googleUser!.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final UserCredential userCredentialData = await FirebaseAuth.instance.signInWithCredential(credential);
+      final String userEmail = userCredentialData.user?.email.toString() ?? 'no_email'; // google login email
+
+      final userRef = db.collection('users').doc(userEmail);
+      userRef.get().then((docSnapshot) async {
+        if (docSnapshot.exists) {
+          /// user is registered
+          UserModel user = UserModel.fromJson(docSnapshot.data() ?? {});
+          userInfo.value = user;
+        } else {
+          /// user is not registered
+          await userRef.set({'user_id': userEmail}); // save user to firestore
+          userInfo.value = UserModel(userID: userEmail);
+        }
+        previousSharedEvents = userInfo.value.sharedEvents ?? [];
+        userDataListen();
+        Get.offNamed('/home'); // 로그인 화면으로
+      });
+    } catch (error) {
+      if (kDebugMode) print(error);
+    }
+  }
+
+  /// google logout
+  Future<void> handleSignOut() async {
+    await auth.signOut();
+    await googleSignIn.disconnect();
   }
 }

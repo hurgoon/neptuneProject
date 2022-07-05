@@ -1,7 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:neptune_project/controllers/event_controller.dart';
 import 'package:neptune_project/controllers/user_controller.dart';
 import 'package:neptune_project/models/user_model.dart';
@@ -166,6 +166,30 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 5),
+
+                const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Divider(color: Colors.black, thickness: 3),
+                ),
+
+                /// google login btn
+                InkWell(
+                    onTap: () {
+                      Get.dialog(const CupertinoActivityIndicator(color: Colors.white)); // 인디케이터 발동
+                      userCon.handleSignIn();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black), borderRadius: BorderRadius.circular(10)),
+                      child: Row(
+                        children: [
+                          Image.network('https://firebase.flutter.dev/img/flutterfire_300x.png', width: 80),
+                          const SizedBox(width: 20),
+                          const Text('GOOGLE SIGN IN'),
+                        ],
+                      ),
+                    )),
               ],
             ),
           ),

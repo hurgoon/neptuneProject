@@ -13,10 +13,12 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   get: ^4.6.5
-  firebase_core: ^1.17.1
+  firebase_core: ^1.19.1
   table_calendar: ^3.0.6
-  cloud_firestore: ^3.1.17
+  cloud_firestore: ^3.2.1
   group_button: ^5.0.1
+  google_sign_in: ^5.3.3
+  firebase_auth: ^3.4.1
 
 dev_dependencies:
   flutter_test:
