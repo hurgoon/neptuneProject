@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
   final RxInt naviIndex = 0.obs;
-  final List<Widget> tabs = [const ChannelListPage(), CalendarPage()];
+  final List<Widget> tabs = [ChannelListPage(), CalendarPage()];
 
   @override
   Widget build(BuildContext context) {

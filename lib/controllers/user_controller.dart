@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:neptune_project/models/event_model.dart';
 import 'package:neptune_project/models/user_model.dart';
+import 'package:stream_chat_flutter/stream_chat_flutter.dart' as gs;
 
 class UserController extends GetxController {
   final db = FirebaseFirestore.instance;
@@ -47,6 +48,8 @@ class UserController extends GetxController {
         userInfo.value = UserModel.fromJson(event.data()!);
         await getMyEvents(userInfo.value.myEvents ?? []);
         await getSharedEvents(userInfo.value.sharedEvents ?? []);
+        await connectChatUser(userInfo.value.userID ?? 'no_userID', userInfo.value.userName ?? 'no_userName',
+            userInfo.value.userImage ?? 'no_userImage');
 
         /// 이벤트 공유 받았을 시 alert
         if (!const ListEquality().equals(previousSharedEvents, userInfo.value.sharedEvents)) {
@@ -103,6 +106,8 @@ class UserController extends GetxController {
       );
       final UserCredential userCredentialData = await FirebaseAuth.instance.signInWithCredential(credential);
       final String userEmail = userCredentialData.user?.email.toString() ?? 'no_email'; // google login email
+      final String? userImage = userCredentialData.user?.photoURL;
+      final String? userName = userCredentialData.user?.displayName;
 
       final userRef = db.collection('users').doc(userEmail);
       userRef.get().then((docSnapshot) async {
@@ -112,8 +117,13 @@ class UserController extends GetxController {
           userInfo.value = user;
         } else {
           /// user is not registered
-          await userRef.set({'user_id': userEmail}); // save user to firestore
-          userInfo.value = UserModel(userID: userEmail);
+          await userRef.set({
+            'user_id': userEmail,
+            'user_image': userImage,
+            'user_name': userName,
+          }); // save user to firestore
+          userInfo.value = UserModel(userID: userEmail, userImage: userImage, userName: userName);
+          // await createChatUser(userEmail, userName ?? 'no_name', userImage ?? 'no_image');
         }
         previousSharedEvents = userInfo.value.sharedEvents ?? [];
         userDataListen();
@@ -128,5 +138,25 @@ class UserController extends GetxController {
   Future<void> handleSignOut() async {
     await auth.signOut();
     await googleSignIn.disconnect();
+  }
+
+  /// connectChatUser
+  Future<void> connectChatUser(String userID, String userName, String userImage) async {
+    final client = gs.StreamChat.of(Get.context!).client;
+    client.connectUser(
+        gs.User(
+          id: userID.replaceAll('.', '_'),
+          extraData: {
+            'name': userName,
+            'image': userImage,
+          },
+        ),
+        client.devToken(userID).rawValue);
+  }
+
+  ///
+  Future<void> createChatChannel(String userID) async {
+    final client = gs.StreamChat.of(Get.context!).client;
+    await client.createChannel('messaging', channelId: userID);
   }
 }

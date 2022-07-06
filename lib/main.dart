@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:neptune_project/app.dart';
 import 'package:neptune_project/firebase_options.dart';
 import 'package:neptune_project/pages/calendar_page.dart';
 import 'package:neptune_project/pages/home_page.dart';
@@ -11,14 +12,8 @@ import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  /// GetStream setup
-  final client = StreamChatClient('hs7a749zvzmx', logLevel: Level.INFO);
-  await client.connectUser(User(id: '1197462'),
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTE5NzQ2MiJ9.KKAZWZXlCHzZJyYAKx_wZCvNf_iYpdCcqVYDDghVEbg');
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // fb init
+  final client = StreamChatClient(streamKey, logLevel: Level.INFO); // getStream setup
 
   runApp(MyApp(client: client));
 }

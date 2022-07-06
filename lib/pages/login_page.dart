@@ -176,7 +176,7 @@ class LoginPage extends StatelessWidget {
                 InkWell(
                     onTap: () {
                       Get.dialog(const CupertinoActivityIndicator(color: Colors.white)); // 인디케이터 발동
-                      userCon.handleSignIn();
+                      userCon.handleSignIn().then((value) => Get.back());
                     },
                     child: Container(
                       padding: const EdgeInsets.all(20),
