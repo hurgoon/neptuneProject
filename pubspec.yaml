@@ -19,6 +19,7 @@ dependencies:
   group_button: ^5.0.1
   google_sign_in: ^5.3.3
   firebase_auth: ^3.4.1
+  stream_chat_flutter: ^4.3.0
 
 dev_dependencies:
   flutter_test:

@@ -1,12 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:neptune_project/firebase_options.dart';
+import 'package:neptune_project/pages/calendar_page.dart';
 import 'package:neptune_project/pages/home_page.dart';
 import 'package:neptune_project/pages/login_page.dart';
-
-import 'firebase_options.dart';
+import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,17 +15,22 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
+  /// GetStream setup
+  final client = StreamChatClient('hs7a749zvzmx', logLevel: Level.INFO);
+  await client.connectUser(User(id: '1197462'),
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTE5NzQ2MiJ9.KKAZWZXlCHzZJyYAKx_wZCvNf_iYpdCcqVYDDghVEbg');
+
+  runApp(MyApp(client: client));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key, required this.client}) : super(key: key);
+  final StreamChatClient client;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-    final auth = FirebaseAuth.instance;
+    final auth = fb.FirebaseAuth.instance;
 
     return GetMaterialApp(
       title: 'Flutter Demo',
@@ -32,8 +38,12 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/login', page: () => LoginPage()),
         GetPage(name: '/home', page: () => HomePage()),
+        GetPage(name: '/calendar', page: () => CalendarPage()),
       ],
       initialRoute: auth.currentUser == null ? '/login' : '/home',
+      builder: (_, child) {
+        return StreamChat(client: client, child: child);
+      },
     );
   }
 }
