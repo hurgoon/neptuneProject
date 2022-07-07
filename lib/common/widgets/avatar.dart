@@ -17,8 +17,6 @@ class Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('⚪ url : ${url}');
-
     return CircleAvatar(
       radius: radius,
       backgroundImage: CachedNetworkImageProvider(url),

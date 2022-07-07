@@ -8,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:neptune_project/models/event_model.dart';
 import 'package:neptune_project/models/user_model.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart' as gs;
+import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 class UserController extends GetxController {
   final db = FirebaseFirestore.instance;
@@ -161,9 +162,24 @@ class UserController extends GetxController {
     }
   }
 
-  /// hold
+  /// make chat room
   Future<void> createChatChannel(String userID) async {
+    final core = gs.StreamChatCore.of(Get.context!);
+    final channel = core.client.channel('messaging', extraData: {
+      'members': [core.currentUser!.id, 'jinsung@nptn_io']
+    });
+    await channel.watch();
+  }
+
+  /// get all users info - 현재 유저는 제외
+  Future<QueryUsersResponse> queryUsers() async {
     final client = gs.StreamChat.of(Get.context!).client;
-    await client.createChannel('messaging', channelId: userID);
+    final gs.QueryUsersResponse response = await client.queryUsers(
+      filter: gs.Filter.and([
+        gs.Filter.equal('role', 'user'),
+        gs.Filter.notEqual('id', userInfo.value.userID!.replaceAll('.', '_')),
+      ]),
+    );
+    return response;
   }
 }

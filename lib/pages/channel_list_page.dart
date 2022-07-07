@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neptune_project/common/widgets/avatar.dart';
@@ -55,6 +56,49 @@ class ChannelListPage extends StatelessWidget {
                   child: Text('Loading...', style: TextStyle(fontSize: 15)),
                 );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Get.defaultDialog(
+            title: 'Who do you want to chat?',
+            titleStyle: const TextStyle(fontSize: 15),
+            content: FutureBuilder(
+                future: userCon.queryUsers(),
+                builder: (_, snapshot) {
+                  QueryUsersResponse? data = snapshot.data as QueryUsersResponse?;
+                  if (data == null) return const CupertinoActivityIndicator();
+
+                  /// gs client member list
+                  return SizedBox(
+                    width: double.maxFinite,
+                    height: 150,
+                    child: ListView.builder(
+                        itemCount: data.users.length,
+                        shrinkWrap: true,
+                        itemBuilder: (_, index) {
+                          User user = data.users[index];
+                          return InkWell(
+                            onTap: () {
+                              /// 유저 선택 -> 채팅방 없으면 생성 있으면 엔터
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                children: [
+                                  Avatar.medium(url: user.extraData['image'].toString()),
+                                  const SizedBox(width: 20),
+                                  Text(user.name),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                  );
+                }),
+            onCancel: () => Get.back(),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
