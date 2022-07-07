@@ -134,27 +134,34 @@ class UserController extends GetxController {
     }
   }
 
-  /// google logout
+  /// google & getStream logout
   Future<void> handleSignOut() async {
     await auth.signOut();
     await googleSignIn.disconnect();
+
+    final client = gs.StreamChat.of(Get.context!).client;
+    await client.disconnectUser();
   }
 
   /// connectChatUser
   Future<void> connectChatUser(String userID, String userName, String userImage) async {
     final client = gs.StreamChat.of(Get.context!).client;
-    client.connectUser(
-        gs.User(
-          id: userID.replaceAll('.', '_'),
-          extraData: {
-            'name': userName,
-            'image': userImage,
-          },
-        ),
-        client.devToken(userID).rawValue);
+
+    // 중복 커넥트 방지
+    if (client.state.currentUser?.id == null) {
+      await client.connectUser(
+          gs.User(
+            id: userID.replaceAll('.', '_'),
+            extraData: {
+              'name': userName,
+              'image': userImage,
+            },
+          ),
+          client.devToken(userID.replaceAll('.', '_')).rawValue);
+    }
   }
 
-  ///
+  /// hold
   Future<void> createChatChannel(String userID) async {
     final client = gs.StreamChat.of(Get.context!).client;
     await client.createChannel('messaging', channelId: userID);
