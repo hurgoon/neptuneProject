@@ -6,11 +6,11 @@ import 'package:neptune_project/controllers/user_controller.dart';
 import 'package:neptune_project/pages/channel_page.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
+// ignore: must_be_immutable
 class ChannelListPage extends StatelessWidget {
   ChannelListPage({Key? key}) : super(key: key);
 
   final UserController userCon = Get.isRegistered<UserController>() ? Get.find() : Get.put(UserController());
-
   late final _listController = StreamChannelListController(
     client: StreamChat.of(Get.context!).client,
     filter: Filter.in_(
@@ -20,6 +20,8 @@ class ChannelListPage extends StatelessWidget {
     sort: const [SortOption('last_message_at')],
     limit: 20,
   );
+
+  final RxList<String> checkedChatUsers = <String>[].obs; // 채팅할 유저 리스트 -> 채팅방 생성용
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +61,8 @@ class ChannelListPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          checkedChatUsers.clear(); // 채팅 참여자 리셋
+
           Get.defaultDialog(
             title: 'Who do you want to chat?',
             titleStyle: const TextStyle(fontSize: 15),
@@ -71,30 +75,62 @@ class ChannelListPage extends StatelessWidget {
                   /// gs client member list
                   return SizedBox(
                     width: double.maxFinite,
-                    height: 150,
+                    height: 200,
                     child: ListView.builder(
                         itemCount: data.users.length,
                         shrinkWrap: true,
                         itemBuilder: (_, index) {
-                          User user = data.users[index];
+                          final User canChatUser = data.users[index];
                           return InkWell(
                             onTap: () {
-                              /// 유저 선택 -> 채팅방 없으면 생성 있으면 엔터
+                              /// 대화상대 선택
+                              if (checkedChatUsers.contains(canChatUser.id)) {
+                                checkedChatUsers.remove(canChatUser.id);
+                              } else {
+                                checkedChatUsers.add(canChatUser.id);
+                              }
                             },
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Row(
-                                children: [
-                                  Avatar.medium(url: user.extraData['image'].toString()),
-                                  const SizedBox(width: 20),
-                                  Text(user.name),
-                                ],
-                              ),
-                            ),
+                            child: Obx(() => Container(
+                                  margin: const EdgeInsets.all(4),
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: checkedChatUsers.contains(canChatUser.id)
+                                        ? Colors.grey.shade300
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Avatar.medium(url: canChatUser.extraData['image'].toString()),
+                                      const SizedBox(width: 20),
+                                      Text(canChatUser.name),
+                                    ],
+                                  ),
+                                )),
                           );
                         }),
                   );
                 }),
+            onConfirm: () {
+              /// 채팅방 없으면 생성 있으면 엔터
+              List<String> channelUsers = checkedChatUsers.map((element) => element.replaceAll('.', '_')).toList();
+
+              userCon.createChatChannel(channelUsers).then((channel) {
+                Get.back(); // off defaultDialog
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return StreamChannel(
+                        channel: channel,
+                        child: const ChannelPage(),
+                      );
+                    },
+                  ),
+                );
+              });
+            },
+            confirmTextColor: Colors.white,
             onCancel: () => Get.back(),
           );
         },

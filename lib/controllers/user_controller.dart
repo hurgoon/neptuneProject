@@ -144,6 +144,8 @@ class UserController extends GetxController {
     await client.disconnectUser();
   }
 
+  /////// Get Stream //////
+
   /// connectChatUser
   Future<void> connectChatUser(String userID, String userName, String userImage) async {
     final client = gs.StreamChat.of(Get.context!).client;
@@ -162,13 +164,17 @@ class UserController extends GetxController {
     }
   }
 
-  /// make chat room
-  Future<void> createChatChannel(String userID) async {
+  /// make chat room - 한번 채팅방을 hard delete 하면 권한조정이 필요하다
+  Future<Channel> createChatChannel(List<String> toChatUserIDs) async {
     final core = gs.StreamChatCore.of(Get.context!);
+
+    toChatUserIDs.add(core.currentUser!.id); // 주최자 포함시킴
+
     final channel = core.client.channel('messaging', extraData: {
-      'members': [core.currentUser!.id, 'jinsung@nptn_io']
+      'members': toChatUserIDs,
     });
-    await channel.watch();
+    await channel.watch(); // 없으면 생성
+    return channel;
   }
 
   /// get all users info - 현재 유저는 제외
