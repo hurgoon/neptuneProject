@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neptune_project/common/widgets/avatar.dart';
+import 'package:neptune_project/controllers/chat_controller.dart';
 import 'package:neptune_project/controllers/user_controller.dart';
 import 'package:neptune_project/pages/channel_page.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
@@ -10,7 +11,9 @@ import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 class ChannelListPage extends StatelessWidget {
   ChannelListPage({Key? key}) : super(key: key);
 
-  final UserController userCon = Get.isRegistered<UserController>() ? Get.find() : Get.put(UserController());
+  final UserController userCon = Get.find();
+  final ChatController chatCon = Get.find();
+
   late final _listController = StreamChannelListController(
     client: StreamChat.of(Get.context!).client,
     filter: Filter.in_(
@@ -67,7 +70,7 @@ class ChannelListPage extends StatelessWidget {
             title: 'Who do you want to chat?',
             titleStyle: const TextStyle(fontSize: 15),
             content: FutureBuilder(
-                future: userCon.queryUsers(),
+                future: chatCon.queryUsers(),
                 builder: (_, snapshot) {
                   QueryUsersResponse? data = snapshot.data as QueryUsersResponse?;
                   if (data == null) return const CupertinoActivityIndicator();
@@ -115,7 +118,7 @@ class ChannelListPage extends StatelessWidget {
               /// 채팅방 없으면 생성 있으면 엔터
               List<String> channelUsers = checkedChatUsers.map((element) => element.replaceAll('.', '_')).toList();
 
-              userCon.createChatChannel(channelUsers).then((channel) {
+              chatCon.createChatChannel(channelUsers).then((channel) {
                 Get.back(); // off defaultDialog
 
                 Navigator.of(context).push(

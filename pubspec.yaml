@@ -22,6 +22,7 @@ dependencies:
   stream_chat_flutter: ^4.3.0
   logger:
   cached_network_image:
+  firebase_messaging: ^11.4.4
 
 dev_dependencies:
   flutter_test:

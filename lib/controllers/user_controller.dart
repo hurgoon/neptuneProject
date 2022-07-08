@@ -5,10 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:neptune_project/controllers/chat_controller.dart';
 import 'package:neptune_project/models/event_model.dart';
 import 'package:neptune_project/models/user_model.dart';
-import 'package:stream_chat_flutter/stream_chat_flutter.dart' as gs;
-import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 class UserController extends GetxController {
   final db = FirebaseFirestore.instance;
@@ -49,7 +48,11 @@ class UserController extends GetxController {
         userInfo.value = UserModel.fromJson(event.data()!);
         await getMyEvents(userInfo.value.myEvents ?? []);
         await getSharedEvents(userInfo.value.sharedEvents ?? []);
-        await connectChatUser(userInfo.value.userID ?? 'no_userID', userInfo.value.userName ?? 'no_userName',
+        await ChatController.to.connectChatUser(
+            userInfo.value.userID ?? 'no_userID',
+            userInfo.value.userName ??
+                'no_us'
+                    'erName',
             userInfo.value.userImage ?? 'no_userImage');
 
         /// 이벤트 공유 받았을 시 alert
@@ -139,53 +142,6 @@ class UserController extends GetxController {
   Future<void> handleSignOut() async {
     await auth.signOut();
     await googleSignIn.disconnect();
-
-    final client = gs.StreamChat.of(Get.context!).client;
-    await client.disconnectUser();
-  }
-
-  /////// Get Stream //////
-
-  /// connectChatUser
-  Future<void> connectChatUser(String userID, String userName, String userImage) async {
-    final client = gs.StreamChat.of(Get.context!).client;
-
-    // 중복 커넥트 방지
-    if (client.state.currentUser?.id == null) {
-      await client.connectUser(
-          gs.User(
-            id: userID.replaceAll('.', '_'),
-            extraData: {
-              'name': userName,
-              'image': userImage,
-            },
-          ),
-          client.devToken(userID.replaceAll('.', '_')).rawValue);
-    }
-  }
-
-  /// make chat room - 한번 채팅방을 hard delete 하면 권한조정이 필요하다
-  Future<Channel> createChatChannel(List<String> toChatUserIDs) async {
-    final core = gs.StreamChatCore.of(Get.context!);
-
-    toChatUserIDs.add(core.currentUser!.id); // 주최자 포함시킴
-
-    final channel = core.client.channel('messaging', extraData: {
-      'members': toChatUserIDs,
-    });
-    await channel.watch(); // 없으면 생성
-    return channel;
-  }
-
-  /// get all users info - 현재 유저는 제외
-  Future<QueryUsersResponse> queryUsers() async {
-    final client = gs.StreamChat.of(Get.context!).client;
-    final gs.QueryUsersResponse response = await client.queryUsers(
-      filter: gs.Filter.and([
-        gs.Filter.equal('role', 'user'),
-        gs.Filter.notEqual('id', userInfo.value.userID!.replaceAll('.', '_')),
-      ]),
-    );
-    return response;
+    await ChatController.to.disconnectUser(); // chat disconnect
   }
 }

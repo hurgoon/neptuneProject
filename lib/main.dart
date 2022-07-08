@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:neptune_project/app.dart';
+import 'package:neptune_project/controllers/chat_controller.dart';
+import 'package:neptune_project/controllers/user_controller.dart';
 import 'package:neptune_project/firebase_options.dart';
 import 'package:neptune_project/pages/calendar_page.dart';
 import 'package:neptune_project/pages/home_page.dart';
@@ -35,6 +37,10 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/home', page: () => HomePage()),
         GetPage(name: '/calendar', page: () => CalendarPage()),
       ],
+      initialBinding: BindingsBuilder(() {
+        Get.put(UserController());
+        Get.put(ChatController());
+      }),
       initialRoute: auth.currentUser == null ? '/login' : '/home',
       builder: (_, child) {
         return StreamChat(client: client, child: child);
