@@ -1,4 +1,7 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:neptune_project/controllers/noti_controller.dart';
 import 'package:neptune_project/controllers/user_controller.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
@@ -8,7 +11,7 @@ class ChatController extends GetxController {
 
   /// connectChatUser
   Future<void> connectChatUser(String userID, String userName, String userImage) async {
-    final client = StreamChat.of(Get.context!).client;
+    final StreamChatClient client = StreamChat.of(Get.context!).client;
 
     // 중복 커넥트 방지
     if (client.state.currentUser?.id == null) {
@@ -21,6 +24,39 @@ class ChatController extends GetxController {
             },
           ),
           client.devToken(userID.replaceAll('.', '_')).rawValue);
+      Get.put(NotiController(client)); // noti init
+
+      final String fcm = await FirebaseMessaging.instance.getToken() ?? 'no_fcm';
+      await client.addDevice(fcm, PushProvider.firebase);
+      final currentUserID = client.state.currentUser?.id ?? 'no_userID';
+      client.on(EventType.messageNew, EventType.notificationMessageNew).listen((event) async {
+        print('⚪ client.on event listen  : ${event.message}');
+
+        if (event.message?.user?.id == currentUserID) {
+          return;
+        }
+        final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+        const initializationSettingsAndroid = AndroidInitializationSettings('launch_background');
+        const initializationSettings = InitializationSettings(
+          android: initializationSettingsAndroid,
+        );
+        await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+        await flutterLocalNotificationsPlugin.show(
+          event.message?.id.hashCode ?? 0,
+          'New message from : ' + (event.message?.user?.name ?? 'no_name'),
+          event.message?.text,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'message channel',
+              'Message channel',
+              channelDescription: 'Channel used for showing messages',
+              // icon: '@drawable/notification',
+              priority: Priority.high,
+              importance: Importance.high,
+            ),
+          ),
+        );
+      });
     }
   }
 

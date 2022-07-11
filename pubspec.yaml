@@ -19,10 +19,11 @@ dependencies:
   group_button: ^5.0.1
   google_sign_in: ^5.3.3
   firebase_auth: ^3.4.1
-  stream_chat_flutter: ^4.3.0
+  stream_chat_flutter: ^4.4.0
   logger:
   cached_network_image:
-  firebase_messaging: ^11.4.4
+  firebase_messaging: ^11.4.1
+  flutter_local_notifications: ^9.6.1
 
 dev_dependencies:
   flutter_test:

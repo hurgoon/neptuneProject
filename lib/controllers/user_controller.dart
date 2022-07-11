@@ -40,7 +40,7 @@ class UserController extends GetxController {
   }
 
   /// 유저 데이터 리스너
-  void userDataListen() {
+  void userDataListen() async {
     userListener = db.collection('users').doc(userInfo.value.userID).snapshots().listen((event) async {
       debugPrint('⚪ LISTEN : ${userInfo.value.userID}');
       if (event.data() != null) {
@@ -48,12 +48,8 @@ class UserController extends GetxController {
         userInfo.value = UserModel.fromJson(event.data()!);
         await getMyEvents(userInfo.value.myEvents ?? []);
         await getSharedEvents(userInfo.value.sharedEvents ?? []);
-        await ChatController.to.connectChatUser(
-            userInfo.value.userID ?? 'no_userID',
-            userInfo.value.userName ??
-                'no_us'
-                    'erName',
-            userInfo.value.userImage ?? 'no_userImage');
+        await ChatController.to.connectChatUser(userInfo.value.userID ?? 'no_userID',
+            userInfo.value.userName ?? 'no_userName', userInfo.value.userImage ?? 'no_userImage');
 
         /// 이벤트 공유 받았을 시 alert
         if (!const ListEquality().equals(previousSharedEvents, userInfo.value.sharedEvents)) {
