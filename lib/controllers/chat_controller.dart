@@ -1,61 +1,47 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:neptune_project/controllers/noti_controller.dart';
 import 'package:neptune_project/controllers/user_controller.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 class ChatController extends GetxController {
+  ChatController(this.client);
+  StreamChatClient client;
+
   static ChatController get to => Get.find();
   final UserController userCon = Get.find();
+  late String gsUserID;
 
   /// connectChatUser
   Future<void> connectChatUser(String userID, String userName, String userImage) async {
-    final StreamChatClient client = StreamChat.of(Get.context!).client;
-
     // 중복 커넥트 방지
     if (client.state.currentUser?.id == null) {
       await client.connectUser(
           User(
-            id: userID.replaceAll('.', '_'),
+            id: userID,
             extraData: {
               'name': userName,
               'image': userImage,
             },
           ),
-          client.devToken(userID.replaceAll('.', '_')).rawValue);
-      Get.put(NotiController(client)); // noti init
+          client.devToken(userID).rawValue);
+      Get.put(NotiController()); // noti init
 
       final String fcm = await FirebaseMessaging.instance.getToken() ?? 'no_fcm';
       await client.addDevice(fcm, PushProvider.firebase);
-      final currentUserID = client.state.currentUser?.id ?? 'no_userID';
-      client.on(EventType.messageNew, EventType.notificationMessageNew).listen((event) async {
-        print('⚪ client.on event listen  : ${event.message}');
+      gsUserID = client.state.currentUser?.id ?? 'no_userID';
+      print('⚪ gsUserID : ${gsUserID}');
 
-        if (event.message?.user?.id == currentUserID) {
+      client.on(EventType.messageNew, EventType.notificationMessageNew).listen((event) async {
+        print('⚪ client.on event listen  : ${event.message?.text}');
+        print('⚪ event.message?.user?.id : ${event.message?.user?.id}'); // 메세지 센더
+        print('⚪ gsUserID : ${gsUserID}'); // 본인
+
+        if (event.message?.user?.id == gsUserID) {
           return;
+        } else {
+          NotiController.to.showLocalNoti(event);
         }
-        final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-        const initializationSettingsAndroid = AndroidInitializationSettings('launch_background');
-        const initializationSettings = InitializationSettings(
-          android: initializationSettingsAndroid,
-        );
-        await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-        await flutterLocalNotificationsPlugin.show(
-          event.message?.id.hashCode ?? 0,
-          'New message from : ' + (event.message?.user?.name ?? 'no_name'),
-          event.message?.text,
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'message channel',
-              'Message channel',
-              channelDescription: 'Channel used for showing messages',
-              // icon: '@drawable/notification',
-              priority: Priority.high,
-              importance: Importance.high,
-            ),
-          ),
-        );
       });
     }
   }

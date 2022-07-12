@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:neptune_project/app.dart';
 import 'package:neptune_project/controllers/chat_controller.dart';
@@ -19,20 +18,22 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // fb init
   FirebaseMessaging.onBackgroundMessage(onBackgroundMessage);
-  runApp(const MyApp());
+  final StreamChatClient client = StreamChatClient(
+    streamKey,
+    //    logLevel: Level.INFO
+  );
+
+  runApp(MyApp(client: client));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({required this.client, Key? key}) : super(key: key);
+  final StreamChatClient client;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final auth = fb.FirebaseAuth.instance;
-    final client = StreamChatClient(
-      streamKey,
-      //    logLevel: Level.INFO
-    );
 
     return GetMaterialApp(
       title: 'Flutter Demo',
@@ -44,10 +45,10 @@ class MyApp extends StatelessWidget {
       ],
       initialBinding: BindingsBuilder(() {
         Get.put(UserController());
-        Get.put(ChatController());
+        Get.put(ChatController(client));
       }),
       initialRoute: auth.currentUser == null ? '/login' : '/home',
-      builder: (_, child) {
+      builder: (context, child) {
         return StreamChat(
           client: client,
           child: child,
@@ -62,29 +63,7 @@ class MyApp extends StatelessWidget {
               return;
             }
             if (event.message == null) return;
-            final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-            const initializationSettingsAndroid = AndroidInitializationSettings('launch_background');
-            const initializationSettingsIOS = IOSInitializationSettings();
-            const initializationSettings = InitializationSettings(
-              android: initializationSettingsAndroid,
-              iOS: initializationSettingsIOS,
-            );
-            await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-            await flutterLocalNotificationsPlugin.show(
-              event.message?.id.hashCode ?? 0,
-              event.message?.user?.name,
-              event.message?.text,
-              const NotificationDetails(
-                android: AndroidNotificationDetails(
-                  'message channel',
-                  'Message channel',
-                  channelDescription: 'Channel used for showing messages',
-                  priority: Priority.high,
-                  importance: Importance.high,
-                ),
-                iOS: IOSNotificationDetails(),
-              ),
-            );
+            NotiController.to.showLocalNoti(event);
           },
         );
       },

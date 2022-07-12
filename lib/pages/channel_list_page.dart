@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,21 +14,20 @@ class ChannelListPage extends StatelessWidget {
 
   final UserController userCon = Get.find();
   final ChatController chatCon = Get.find();
-
-  late final _listController = StreamChannelListController(
-    client: StreamChat.of(Get.context!).client,
-    filter: Filter.in_(
-      'members',
-      [StreamChat.of(Get.context!).currentUser!.id],
-    ),
-    sort: const [SortOption('last_message_at')],
-    limit: 20,
-  );
-
   final RxList<String> checkedChatUsers = <String>[].obs; // 채팅할 유저 리스트 -> 채팅방 생성용
 
   @override
   Widget build(BuildContext context) {
+    final StreamChannelListController _listController = StreamChannelListController(
+      client: chatCon.client,
+      filter: Filter.in_(
+        'members',
+        [chatCon.client.state.currentUser?.id ?? 'no_id'],
+      ),
+      sort: const [SortOption('last_message_at')],
+      limit: 20,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chats'),
@@ -40,8 +40,8 @@ class ChannelListPage extends StatelessWidget {
       ),
       body: StreamBuilder(
         stream: StreamChat.of(context).currentUserStream,
-        builder: (_, snapshot) {
-          return snapshot.data != null
+        builder: (context, snapshot) {
+          return (snapshot.data != null)
               ? StreamChannelListView(
                   controller: _listController,
                   onChannelTap: (channel) {
@@ -63,7 +63,18 @@ class ChannelListPage extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
+          ///
+
+          final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('uploadSpMessage');
+          final HttpsCallableResult result = await callable();
+          print('⚪ rd : ${result.data}');
+
+          final HttpsCallable callable2 = FirebaseFunctions.instance.httpsCallable('uploadSpMessage2');
+          final HttpsCallableResult result2 = await callable2({'message': 'here'});
+          print('⚪ rd2 : ${result2.data}');
+
+          ///
           checkedChatUsers.clear(); // 채팅 참여자 리셋
 
           Get.defaultDialog(

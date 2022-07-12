@@ -17,13 +17,14 @@ dependencies:
   table_calendar: ^3.0.6
   cloud_firestore: ^3.2.1
   group_button: ^5.0.1
-  google_sign_in: ^5.3.3
+  google_sign_in: ^5.4.0
   firebase_auth: ^3.4.1
   stream_chat_flutter: ^4.4.0
   logger:
   cached_network_image:
-  firebase_messaging: ^11.4.1
-  flutter_local_notifications: ^9.6.1
+  firebase_messaging: ^11.4.4
+  flutter_local_notifications: ^9.7.0
+  cloud_functions: ^3.3.1
 
 dev_dependencies:
   flutter_test:

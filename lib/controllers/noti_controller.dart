@@ -1,13 +1,11 @@
 import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:neptune_project/app.dart';
+import 'package:neptune_project/controllers/chat_controller.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotiController extends GetxController {
-  NotiController(this.client);
-  StreamChatClient client;
-
   static NotiController get to => Get.find();
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   late String fcmToken;
@@ -59,8 +57,51 @@ class NotiController extends GetxController {
   }
 
   void updateToken(String token) {
-    client.addDevice(token, PushProvider.firebase);
+    ChatController.to.client.addDevice(token, PushProvider.firebase);
     fcmToken = token;
+  }
+
+  void handleNotification(RemoteMessage message, StreamChatClient client) async {
+    final data = message.data;
+
+    if (data['type'] == 'message.new') {
+      final messageId = data['id'];
+      final response = await client.getMessage(messageId);
+      showLocalNoti(response);
+    }
+  }
+
+  Future<void> showLocalNoti(event) async {
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    const initializationSettingsAndroid = AndroidInitializationSettings('launch_background');
+    const initializationSettingsIOS = IOSInitializationSettings();
+    const initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    await flutterLocalNotificationsPlugin.show(
+      event.message?.id.hashCode ?? 0,
+      'New message from : ' + (event.message?.user?.name ?? 'no_name'),
+      event.message?.text,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'message channel',
+          'Message channel',
+          channelDescription: 'Channel used for showing messages',
+          // icon: '@drawable/notification',
+          priority: Priority.high,
+          importance: Importance.high,
+        ),
+        iOS: IOSNotificationDetails(
+          // badgeNumber: badgeNumber,
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          subtitle: 'Message channel',
+        ),
+      ),
+    );
   }
 }
 
@@ -79,40 +120,5 @@ Future<void> onBackgroundMessage(RemoteMessage message) async {
     connectWebSocket: false,
   );
 
-  handleNotification(message, client);
-}
-
-void handleNotification(RemoteMessage message, StreamChatClient client) async {
-  final data = message.data;
-
-  if (data['type'] == 'message.new') {
-    final flutterLocalNotificationsPlugin = await setupLocalNotifications();
-    final messageId = data['id'];
-    final response = await client.getMessage(messageId);
-
-    flutterLocalNotificationsPlugin.show(
-      1,
-      '⚪ New message from ${response.message.user?.name} in ${response.channel?.name}',
-      response.message.text,
-      const NotificationDetails(
-          android: AndroidNotificationDetails(
-        'new_message',
-        'New message notifications channel',
-      )),
-    );
-  }
-}
-
-Future<FlutterLocalNotificationsPlugin> setupLocalNotifications() async {
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('launch_background');
-  const IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  return flutterLocalNotificationsPlugin;
+  NotiController.to.handleNotification(message, client);
 }

@@ -42,7 +42,7 @@ class UserController extends GetxController {
   /// 유저 데이터 리스너
   void userDataListen() async {
     userListener = db.collection('users').doc(userInfo.value.userID).snapshots().listen((event) async {
-      debugPrint('⚪ LISTEN : ${userInfo.value.userID}');
+      debugPrint('⚪ LISTEN : ${userInfo.value.userName} // ${userInfo.value.userID}');
       if (event.data() != null) {
         myEvents.clear();
         userInfo.value = UserModel.fromJson(event.data()!);
@@ -105,11 +105,12 @@ class UserController extends GetxController {
         idToken: googleAuth.idToken,
       );
       final UserCredential userCredentialData = await FirebaseAuth.instance.signInWithCredential(credential);
-      final String userEmail = userCredentialData.user?.email.toString() ?? 'no_email'; // google login email
+      final String userID = userCredentialData.user?.uid.toString() ?? 'no_id';
+      // final String userEmail = userCredentialData.user?.email.toString() ?? 'no_email'; // google login email
       final String? userImage = userCredentialData.user?.photoURL;
       final String? userName = userCredentialData.user?.displayName;
 
-      final userRef = db.collection('users').doc(userEmail);
+      final userRef = db.collection('users').doc(userID);
       userRef.get().then((docSnapshot) async {
         if (docSnapshot.exists) {
           /// user is registered
@@ -118,11 +119,11 @@ class UserController extends GetxController {
         } else {
           /// user is not registered
           await userRef.set({
-            'user_id': userEmail,
+            'user_id': userID,
             'user_image': userImage,
             'user_name': userName,
           }); // save user to firestore
-          userInfo.value = UserModel(userID: userEmail, userImage: userImage, userName: userName);
+          userInfo.value = UserModel(userID: userID, userImage: userImage, userName: userName);
           // await createChatUser(userEmail, userName ?? 'no_name', userImage ?? 'no_image');
         }
         previousSharedEvents = userInfo.value.sharedEvents ?? [];
