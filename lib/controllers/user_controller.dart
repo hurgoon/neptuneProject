@@ -25,7 +25,7 @@ class UserController extends GetxController {
 
     /// google auto login case
     if (userInfo.value.userID == null && auth.currentUser != null) {
-      userInfo.value.userID = auth.currentUser?.email ?? 'no_email';
+      userInfo.value.userID = auth.currentUser?.uid ?? 'no_email';
       userDataListen();
     }
   }

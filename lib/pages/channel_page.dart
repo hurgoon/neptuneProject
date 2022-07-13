@@ -29,7 +29,7 @@ class ChannelPage extends StatelessWidget {
                   InkWell(
                     onTap: () async {
                       print('⚪ ttt ');
-                      channel.addMembers(['jinsung@nptn_io0']);
+                      // channel.addMembers(['jinsung@nptn_io0']);
 
                       // final invite = ChatController.to.client.channel("messaging", extraData: {
                       //   "members": ['hurgoon@gmail_com', 'jinsung@nptn_io']

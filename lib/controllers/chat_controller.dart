@@ -1,4 +1,6 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neptune_project/controllers/noti_controller.dart';
 import 'package:neptune_project/controllers/user_controller.dart';
@@ -38,7 +40,15 @@ class ChatController extends GetxController {
         print('⚪ gsUserID : ${gsUserID}'); // 본인
 
         if (event.message?.user?.id == gsUserID) {
-          return;
+          /// 본인이 '#'로 특수 메세지를 보낼 때 저장
+          String sendMsg = event.message?.text ?? '';
+          print('⚪ sendMsg : ${sendMsg}');
+
+          if (sendMsg.contains('#')) {
+            final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('uploadSpMessage');
+            final HttpsCallableResult result = await callable({'message': sendMsg});
+            debugPrint('⚪ spMsgUpload result : ${result.data}');
+          }
         } else {
           NotiController.to.showLocalNoti(event);
         }

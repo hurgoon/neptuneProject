@@ -64,17 +64,6 @@ class ChannelListPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          ///
-
-          final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('uploadSpMessage');
-          final HttpsCallableResult result = await callable();
-          print('⚪ rd : ${result.data}');
-
-          final HttpsCallable callable2 = FirebaseFunctions.instance.httpsCallable('uploadSpMessage2');
-          final HttpsCallableResult result2 = await callable2({'message': 'here'});
-          print('⚪ rd2 : ${result2.data}');
-
-          ///
           checkedChatUsers.clear(); // 채팅 참여자 리셋
 
           Get.defaultDialog(
