@@ -1,5 +1,5 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:neptune_project/controllers/chat_controller.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 class ChannelPage extends StatelessWidget {
@@ -57,11 +57,22 @@ class ChannelPage extends StatelessWidget {
         ],
       ),
       body: Column(
-        children: const <Widget>[
-          Expanded(
+        children: <Widget>[
+          const Expanded(
             child: StreamMessageListView(),
           ),
-          StreamMessageInput(),
+          StreamMessageInput(
+            preMessageSending: (pMsg) async {
+              /// 보내는 메세지에 /save 문자열이 있으면 firestore save
+              if (pMsg.text?.contains('/save') ?? false) {
+                final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('uploadSpMessage');
+                final HttpsCallableResult result = await callable({'message': pMsg.text});
+                debugPrint('⚪ spMsgUpload result : ${result.data}');
+                pMsg = pMsg.copyWith(text: pMsg.text?.replaceAll('/save', '')); // save 문자열 제거
+              }
+              return pMsg;
+            },
+          ),
         ],
       ),
     );

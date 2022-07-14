@@ -65,6 +65,7 @@ class ChatController extends GetxController {
     final channel = core.client.channel('messaging', extraData: {
       'members': toChatUserIDs,
     });
+
     await channel.watch(); // 없으면 생성
     return channel;
   }
